@@ -116,24 +116,40 @@ public class MainActivity extends Activity {
         header.setGravity(Gravity.CENTER_VERTICAL);
         header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         header.setClipChildren(false);
+        header.setPadding(dp(8), dp(4), dp(8), dp(4));
+        header.setBackground(box(Color.rgb(10, 8, 3), 16, GOLD_DARK, 1));
+
+        LinearLayout brand = new LinearLayout(this);
+        brand.setOrientation(LinearLayout.VERTICAL);
+        brand.setGravity(Gravity.CENTER_HORIZONTAL);
+        brand.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
 
         ImageView logo = new ImageView(this);
         logo.setImageResource(R.drawable.abk_logo);
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        logo.setContentDescription("ABK IPTV");
-        header.addView(logo, new LinearLayout.LayoutParams(dp(96), dp(96)));
+        logo.setContentDescription("AKB IPTV");
+        brand.addView(logo, new LinearLayout.LayoutParams(dp(82), dp(82)));
 
         TextView title = new TextView(this);
         title.setText("عبدالعزيز بوقماز");
         title.setTextColor(GOLD);
-        title.setTextSize(28);
+        title.setTextSize(17);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
-        title.setPadding(dp(18), 0, dp(8), 0);
-        header.addView(title, new LinearLayout.LayoutParams(0, dp(82), 1f));
+        title.setGravity(Gravity.CENTER);
+        brand.addView(title, new LinearLayout.LayoutParams(dp(150), dp(28)));
+
+        header.addView(brand, new LinearLayout.LayoutParams(dp(160), dp(112)));
+
+        TextView skyline = new TextView(this);
+        skyline.setText("✦   KUWAIT   ✦");
+        skyline.setTextColor(GOLD_DARK);
+        skyline.setTextSize(18);
+        skyline.setGravity(Gravity.CENTER);
+        skyline.setLetterSpacing(0.18f);
+        header.addView(skyline, new LinearLayout.LayoutParams(0, dp(112), 1f));
 
         root.addView(header, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(102)));
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(120)));
 
         HorizontalScrollView hsv = new HorizontalScrollView(this);
         hsv.setHorizontalScrollBarEnabled(false);
@@ -152,7 +168,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
         root.addView(hsv, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(70)));
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(62)));
 
         grid = new GridView(this);
         grid.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
@@ -216,7 +232,7 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams lp =
                     new LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
-                            dp(54));
+                            dp(48));
             lp.setMargins(dp(6), dp(4), dp(6), dp(4));
             categoryBar.addView(b, lp);
 
@@ -475,9 +491,27 @@ public class MainActivity extends Activity {
                 TextView tv = (TextView) v;
 
                 if (hasFocus) {
-                    // بدون تكبير حتى ما ينقص الإطار يمين/يسار
+                    // إطار ذهبي بدون تكبير حتى ما ينقص يمين/يسار
                     tv.setBackground(box(GOLD_DARK, 15, GOLD, 4));
                     tv.setElevation(dp(10));
+
+                    // مهم للريموت: إذا وصل المؤشر لصف تحت، حرّك الشبكة
+                    // تلقائياً حتى تظهر المحطة كاملة قبل الضغط عليها.
+                    grid.post(() -> {
+                        int first = grid.getFirstVisiblePosition();
+                        int last = grid.getLastVisiblePosition();
+                        int cols = Math.max(1, grid.getNumColumns());
+
+                        if (position >= last - cols + 1) {
+                            grid.smoothScrollToPosition(
+                                    Math.min(data.size() - 1, position + cols)
+                            );
+                        } else if (position <= first + cols - 1) {
+                            grid.smoothScrollToPosition(
+                                    Math.max(0, position - cols)
+                            );
+                        }
+                    });
                 } else {
                     tv.setBackground(box(TILE, 15, GOLD_DARK, 1));
                     tv.setElevation(0);
