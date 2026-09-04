@@ -255,6 +255,13 @@ public class MainActivity extends Activity {
 
             Channel ch = data.get(position);
             t.setText(ch.name);
+            t.setOnClickListener(v -> {
+                Intent in = new Intent(MainActivity.this, PlayerActivity.class);
+                in.putExtra("name", ch.name);
+                in.putExtra("url", ch.url);
+                in.putExtra("referrer", ch.referrer == null ? "" : ch.referrer);
+                startActivity(in);
+            });
             t.setBackground(rounded(TILE, 16));
             t.setScaleX(1f); t.setScaleY(1f);
 
