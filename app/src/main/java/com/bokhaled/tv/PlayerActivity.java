@@ -11,9 +11,10 @@ import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.exoplayer.hls.HlsMediaSource;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.ui.PlayerView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,12 @@ public class PlayerActivity extends Activity {
 
     private ExoPlayer player;
     private PlayerView playerView;
+    private DefaultHttpDataSource.Factory httpFactory;
+
+    private ArrayList<String> names;
+    private ArrayList<String> urls;
+    private ArrayList<String> referrers;
+    private int currentIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,53 +39,97 @@ public class PlayerActivity extends Activity {
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
 
-        String url = getIntent().getStringExtra("url");
-        String referrer = getIntent().getStringExtra("referrer");
+        names = getIntent().getStringArrayListExtra("names");
+        urls = getIntent().getStringArrayListExtra("urls");
+        referrers = getIntent().getStringArrayListExtra("referrers");
+        currentIndex = getIntent().getIntExtra("index", 0);
 
-        if (url == null || url.trim().isEmpty()) {
-            Toast.makeText(this, "رابط القناة غير موجود", Toast.LENGTH_SHORT).show();
+        if (urls == null || urls.isEmpty()) {
+            Toast.makeText(this, "قائمة القنوات غير موجودة", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
+
+        if (names == null) names = new ArrayList<>();
+        if (referrers == null) referrers = new ArrayList<>();
+
+        if (currentIndex < 0 || currentIndex >= urls.size()) currentIndex = 0;
 
         playerView = new PlayerView(this);
         playerView.setUseController(false);
         playerView.setKeepScreenOn(true);
         setContentView(playerView);
 
-        DefaultHttpDataSource.Factory httpFactory =
-                new DefaultHttpDataSource.Factory()
-                        .setUserAgent("Mozilla/5.0 (Android TV)");
+        initPlayer();
+        playCurrent(false);
+    }
 
-        if (referrer != null && !referrer.trim().isEmpty()) {
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Referer", referrer);
-            httpFactory.setDefaultRequestProperties(headers);
-        }
+    private void initPlayer() {
+        if (player != null) return;
 
-        player = new ExoPlayer.Builder(this).build();
+        httpFactory = new DefaultHttpDataSource.Factory()
+                .setUserAgent("Mozilla/5.0 (Android TV)");
+
+        DefaultMediaSourceFactory mediaSourceFactory =
+                new DefaultMediaSourceFactory(httpFactory);
+
+        player = new ExoPlayer.Builder(this)
+                .setMediaSourceFactory(mediaSourceFactory)
+                .build();
+
         playerView.setPlayer(player);
-
-        MediaItem item = MediaItem.fromUri(url);
-
-        HlsMediaSource source = new HlsMediaSource.Factory(httpFactory)
-                .createMediaSource(item);
-
-        player.setMediaSource(source);
 
         player.addListener(new Player.Listener() {
             @Override
             public void onPlayerError(PlaybackException error) {
                 Toast.makeText(
                         PlayerActivity.this,
-                        "القناة ما اشتغلت حالياً — جرّب قناة ثانية",
+                        "القناة ما اشتغلت حالياً — جرّب فوق أو تحت",
                         Toast.LENGTH_LONG
                 ).show();
             }
         });
+    }
 
+    private void playCurrent(boolean showName) {
+        if (urls == null || urls.isEmpty()) return;
+
+        String url = urls.get(currentIndex);
+        String referrer = currentIndex < referrers.size()
+                ? referrers.get(currentIndex)
+                : "";
+
+        Map<String, String> headers = new HashMap<>();
+        if (referrer != null && !referrer.trim().isEmpty()) {
+            headers.put("Referer", referrer);
+        }
+        httpFactory.setDefaultRequestProperties(headers);
+
+        MediaItem item = MediaItem.fromUri(url);
+        player.setMediaItem(item);
         player.prepare();
         player.play();
+
+        if (showName) {
+            String name = currentIndex < names.size()
+                    ? names.get(currentIndex)
+                    : "القناة";
+            Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void nextChannel() {
+        if (urls == null || urls.isEmpty()) return;
+        currentIndex++;
+        if (currentIndex >= urls.size()) currentIndex = 0;
+        playCurrent(true);
+    }
+
+    private void previousChannel() {
+        if (urls == null || urls.isEmpty()) return;
+        currentIndex--;
+        if (currentIndex < 0) currentIndex = urls.size() - 1;
+        playCurrent(true);
     }
 
     @Override
@@ -89,20 +140,37 @@ public class PlayerActivity extends Activity {
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
-            keyCode == KeyEvent.KEYCODE_ENTER) {
+        // فوق = القناة السابقة
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            previousChannel();
+            return true;
+        }
 
+        // تحت = القناة التالية
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            nextChannel();
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
+                keyCode == KeyEvent.KEYCODE_ENTER) {
             if (player != null) {
-                if (player.isPlaying()) {
-                    player.pause();
-                } else {
-                    player.play();
-                }
+                if (player.isPlaying()) player.pause();
+                else player.play();
             }
             return true;
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (player == null && urls != null && !urls.isEmpty()) {
+            initPlayer();
+            playCurrent(false);
+        }
     }
 
     @Override

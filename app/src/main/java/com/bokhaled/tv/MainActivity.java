@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -19,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,10 +53,8 @@ public class MainActivity extends Activity {
     private GridView grid;
     private ChannelAdapter adapter;
     private LinearLayout categoryBar;
-
     private SharedPreferences prefs;
     private Set<String> favorites = new HashSet<>();
-
     private String activeGroup = "★ المفضلة";
 
     private final int BG = Color.rgb(15, 17, 21);
@@ -86,11 +84,8 @@ public class MainActivity extends Activity {
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         );
 
-        prefs = getSharedPreferences("bokhaled_tv", MODE_PRIVATE);
-
-        favorites = new HashSet<>(
-                prefs.getStringSet("favorites", new HashSet<>())
-        );
+        prefs = getSharedPreferences("bogammaz_tv", MODE_PRIVATE);
+        favorites = new HashSet<>(prefs.getStringSet("favorites", new HashSet<>()));
 
         loadPlaylist();
         buildUi();
@@ -104,40 +99,29 @@ public class MainActivity extends Activity {
         GradientDrawable g = new GradientDrawable();
         g.setColor(fill);
         g.setCornerRadius(dp(radius));
-
-        if (strokeWidth > 0) {
-            g.setStroke(dp(strokeWidth), strokeColor);
-        }
-
+        if (strokeWidth > 0) g.setStroke(dp(strokeWidth), strokeColor);
         return g;
     }
 
     private void buildUi() {
-
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(BG);
-        root.setPadding(dp(28), dp(16), dp(28), dp(20));
-        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        root.setPadding(dp(24), dp(12), dp(24), dp(18));
+        root.setClipChildren(false);
+        root.setClipToPadding(false);
 
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
         header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        header.setClipChildren(false);
 
-        TextView logo = new TextView(this);
-        logo.setText("ABK");
-        logo.setTextColor(GOLD);
-        logo.setTextSize(30);
-        logo.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        logo.setGravity(Gravity.CENTER);
-        logo.setBackground(box(Color.BLACK, 10, GOLD, 2));
-        logo.setPadding(dp(18), dp(4), dp(18), dp(4));
-
-        header.addView(
-                logo,
-                new LinearLayout.LayoutParams(dp(130), dp(52))
-        );
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(R.drawable.abk_logo);
+        logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        logo.setContentDescription("ABK IPTV");
+        header.addView(logo, new LinearLayout.LayoutParams(dp(82), dp(82)));
 
         TextView title = new TextView(this);
         title.setText("عبدالعزيز بوقماز");
@@ -145,120 +129,76 @@ public class MainActivity extends Activity {
         title.setTextSize(28);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
-        title.setPadding(dp(20), 0, dp(8), 0);
+        title.setPadding(dp(18), 0, dp(8), 0);
+        header.addView(title, new LinearLayout.LayoutParams(0, dp(82), 1f));
 
-        header.addView(
-                title,
-                new LinearLayout.LayoutParams(0, dp(58), 1f)
-        );
-
-        root.addView(
-                header,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        dp(62)
-                )
-        );
+        root.addView(header, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(86)));
 
         HorizontalScrollView hsv = new HorizontalScrollView(this);
         hsv.setHorizontalScrollBarEnabled(false);
         hsv.setFillViewport(true);
+        hsv.setClipChildren(false);
+        hsv.setClipToPadding(false);
 
         categoryBar = new LinearLayout(this);
         categoryBar.setOrientation(LinearLayout.HORIZONTAL);
         categoryBar.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
         categoryBar.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        categoryBar.setClipChildren(false);
 
-        hsv.addView(
-                categoryBar,
-                new HorizontalScrollView.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                )
-        );
+        hsv.addView(categoryBar, new HorizontalScrollView.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
 
-        root.addView(
-                hsv,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        dp(74)
-                )
-        );
+        root.addView(hsv, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(70)));
 
         grid = new GridView(this);
-
-        // مهم: يخلي أول قناة فعلياً بالجهة اليسار
         grid.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-
         grid.setNumColumns(5);
-        grid.setHorizontalSpacing(dp(16));
-        grid.setVerticalSpacing(dp(16));
+        grid.setHorizontalSpacing(dp(14));
+        grid.setVerticalSpacing(dp(14));
         grid.setStretchMode(GridView.STRETCH_COLUMN_WIDTH);
         grid.setGravity(Gravity.CENTER);
         grid.setClipToPadding(false);
-        grid.setPadding(0, dp(10), 0, dp(20));
+        grid.setClipChildren(false);
+        grid.setPadding(dp(8), dp(10), dp(8), dp(20));
         grid.setSelector(android.R.color.transparent);
         grid.setFocusable(true);
         grid.setFocusableInTouchMode(false);
+        grid.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
         adapter = new ChannelAdapter(this, shownChannels);
         grid.setAdapter(adapter);
 
-        root.addView(
-                grid,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        0,
-                        1f
-                )
-        );
+        root.addView(grid, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
         setContentView(root);
-
         buildCategories();
         filter("★ المفضلة");
     }
 
     private void buildCategories() {
-
         categoryBar.removeAllViews();
 
         Set<String> groups = new LinkedHashSet<>();
-
-        // المفضلة أول خيار
         groups.add("★ المفضلة");
         groups.add("الكل");
 
         String[] preferred = new String[] {
-                "الكويت",
-                "الأخبار",
-                "MBC",
-                "روتانا",
-                "الجزيرة",
-                "الشرق",
-                "الإمارات",
-                "السعودية",
-                "قطر",
-                "البحرين",
-                "عمان",
-                "مصر",
-                "أطفال",
-                "دولية عربية"
+                "الكويت", "MBC", "السعودية", "الإمارات", "قطر", "البحرين",
+                "عمان", "مصر", "لبنان", "العراق", "المغرب", "الجزائر",
+                "تونس", "فلسطين", "الأردن", "سوريا", "الأخبار",
+                "رياضة", "أطفال", "أفلام", "موسيقى"
         };
 
-        for (String p : preferred) {
-            groups.add(p);
-        }
-
-        for (Channel c : allChannels) {
-            groups.add(c.group);
-        }
+        for (String p : preferred) groups.add(p);
+        for (Channel c : allChannels) groups.add(c.group);
 
         for (String g : groups) {
-
-            if (!g.equals("★ المفضلة") &&
-                !g.equals("الكل") &&
-                !containsGroup(g)) {
+            if (!g.equals("★ المفضلة") && !g.equals("الكل") && !containsGroup(g)) {
                 continue;
             }
 
@@ -270,42 +210,34 @@ public class MainActivity extends Activity {
             b.setSingleLine(true);
             b.setFocusable(true);
             b.setFocusableInTouchMode(false);
-            b.setPadding(dp(25), 0, dp(25), 0);
+            b.setPadding(dp(22), 0, dp(22), 0);
             b.setBackground(box(TILE, 12, Color.TRANSPARENT, 0));
 
             LinearLayout.LayoutParams lp =
                     new LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
-                            dp(56)
-                    );
-
-            lp.setMargins(dp(7), dp(5), dp(7), dp(5));
+                            dp(54));
+            lp.setMargins(dp(6), dp(4), dp(6), dp(4));
             categoryBar.addView(b, lp);
 
             b.setOnFocusChangeListener((v, hasFocus) -> {
-
-                v.setScaleX(hasFocus ? 1.06f : 1f);
-                v.setScaleY(hasFocus ? 1.06f : 1f);
-
                 if (hasFocus) {
-                    v.setBackground(box(TILE, 12, GOLD, 3));
+                    v.setBackground(box(GOLD_DARK, 12, GOLD, 3));
+                    v.setElevation(dp(8));
                 } else {
                     v.setBackground(box(TILE, 12, Color.TRANSPARENT, 0));
+                    v.setElevation(0);
                 }
             });
 
             b.setOnClickListener(v -> filter(g));
 
-            // إصلاح النزول من التصنيفات إلى أول قناة
             b.setOnKeyListener((v, keyCode, event) -> {
-
                 if (event.getAction() == KeyEvent.ACTION_DOWN &&
-                    keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-
+                        keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                     focusFirstChannel();
                     return true;
                 }
-
                 return false;
             });
         }
@@ -313,28 +245,19 @@ public class MainActivity extends Activity {
 
     private boolean containsGroup(String g) {
         for (Channel c : allChannels) {
-            if (g.equals(c.group)) {
-                return true;
-            }
+            if (g.equals(c.group)) return true;
         }
         return false;
     }
 
     private void filter(String group) {
-
         activeGroup = group;
         shownChannels.clear();
 
         for (Channel c : allChannels) {
-
             if ("★ المفضلة".equals(group)) {
-
-                if (favorites.contains(c.url)) {
-                    shownChannels.add(c);
-                }
-
+                if (favorites.contains(c.url)) shownChannels.add(c);
             } else if ("الكل".equals(group) || group.equals(c.group)) {
-
                 shownChannels.add(c);
             }
         }
@@ -351,132 +274,56 @@ public class MainActivity extends Activity {
     }
 
     private void focusFirstChannel() {
-
-        if (shownChannels.isEmpty()) {
-            return;
-        }
+        if (shownChannels.isEmpty()) return;
 
         grid.setSelection(0);
-
         grid.postDelayed(() -> {
-
             View first = grid.getChildAt(0);
-
-            if (first != null) {
-                first.requestFocus();
-            } else {
-                grid.requestFocus();
-            }
-
-        }, 80);
+            if (first != null) first.requestFocus();
+            else grid.requestFocus();
+        }, 100);
     }
 
     private void openChannel(Channel ch) {
+        int index = shownChannels.indexOf(ch);
 
-        if ("MBC".equals(ch.group) ||
-            (ch.url != null && ch.url.contains("shahid.mbc.net"))) {
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> urls = new ArrayList<>();
+        ArrayList<String> referrers = new ArrayList<>();
 
-            String officialUrl = getOfficialShahidUrl(ch);
-
-            try {
-                Intent shahid = new Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse(officialUrl)
-                );
-
-                startActivity(shahid);
-
-            } catch (Exception e) {
-
-                Toast.makeText(
-                        this,
-                        "ثبت تطبيق Shahid على التلفزيون لتشغيل هالقناة",
-                        Toast.LENGTH_LONG
-                ).show();
-            }
-
-            return;
+        for (Channel c : shownChannels) {
+            names.add(c.name);
+            urls.add(c.url);
+            referrers.add(c.referrer == null ? "" : c.referrer);
         }
 
-        Intent in = new Intent(
-                MainActivity.this,
-                PlayerActivity.class
-        );
-
-        in.putExtra("name", ch.name);
-        in.putExtra("url", ch.url);
-        in.putExtra(
-                "referrer",
-                ch.referrer == null ? "" : ch.referrer
-        );
-
+        Intent in = new Intent(MainActivity.this, PlayerActivity.class);
+        in.putStringArrayListExtra("names", names);
+        in.putStringArrayListExtra("urls", urls);
+        in.putStringArrayListExtra("referrers", referrers);
+        in.putExtra("index", Math.max(0, index));
         startActivity(in);
     }
 
-    private String getOfficialShahidUrl(Channel ch) {
-
-        String name = ch.name == null
-                ? ""
-                : ch.name.trim().toLowerCase();
-
-        if (name.contains("باب الحارة")) {
-            return "https://shahid.mbc.net/ar/livestream/Bab-Al-Hara-Channel/livechannel-975435";
-        }
-
-        if (name.contains("مرايا") || name.contains("maraya")) {
-            return "https://shahid.mbc.net/ar/livestream/Maraya/livechannel-988045";
-        }
-
-        if (name.contains("mbc masr 2")) {
-            return "https://shahid.mbc.net/ar/livestream/MBC-Masr/livechannel-387293";
-        }
-
-        if (name.contains("mbc masr")) {
-            return "https://shahid.mbc.net/ar/livestream/mbc-masr/livechannel-387290";
-        }
-
-        if (name.contains("mbc drama")) {
-            return "https://shahid.mbc.net/ar/livestream/MBC-Drama/livechannel-387251";
-        }
-
-        if (name.contains("mbc 2") || name.equals("mbc2")) {
-            return "https://shahid.mbc.net/ar/livestream/MBC2/livechannel-400917";
-        }
-
-        if (name.contains("mbc 1") || name.equals("mbc1")) {
-            return "https://shahid.mbc.net/ar/livestream/MBC1/livechannel-387238";
-        }
-
-        return "https://shahid.mbc.net/ar/livestream";
-    }
-
     private void toggleFavorite(Channel ch) {
-
         if (favorites.contains(ch.url)) {
-
             favorites.remove(ch.url);
-
             Toast.makeText(
                     this,
                     "تم حذف " + ch.name + " من المفضلة",
                     Toast.LENGTH_SHORT
             ).show();
-
         } else {
-
             if (favorites.size() >= MAX_FAVORITES) {
-
                 Toast.makeText(
                         this,
                         "المفضلة فيها 14 قناة — احذف قناة أول",
                         Toast.LENGTH_LONG
                 ).show();
-
                 return;
             }
 
             favorites.add(ch.url);
-
             Toast.makeText(
                     this,
                     "★ تمت إضافة " + ch.name + " للمفضلة",
@@ -484,31 +331,20 @@ public class MainActivity extends Activity {
             ).show();
         }
 
-        prefs.edit()
-                .putStringSet(
-                        "favorites",
-                        new HashSet<>(favorites)
-                )
-                .apply();
+        prefs.edit().putStringSet("favorites", new HashSet<>(favorites)).apply();
 
-        if ("★ المفضلة".equals(activeGroup)) {
-            filter(activeGroup);
-        } else {
-            adapter.notifyDataSetChanged();
-        }
+        if ("★ المفضلة".equals(activeGroup)) filter(activeGroup);
+        else adapter.notifyDataSetChanged();
     }
 
     private void loadPlaylist() {
-
         try {
-
-            BufferedReader br =
-                    new BufferedReader(
-                            new InputStreamReader(
-                                    getAssets().open("channels.m3u"),
-                                    "UTF-8"
-                            )
-                    );
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(
+                            getAssets().open("channels.m3u"),
+                            "UTF-8"
+                    )
+            );
 
             String line;
             String name = null;
@@ -516,52 +352,29 @@ public class MainActivity extends Activity {
             String referrer = "";
 
             while ((line = br.readLine()) != null) {
-
                 line = line.trim();
 
                 if (line.startsWith("#EXTINF:")) {
-
                     int comma = line.lastIndexOf(',');
-
                     name = comma >= 0
                             ? line.substring(comma + 1).trim()
                             : "قناة";
 
-                    group = extractAttr(
-                            line,
-                            "group-title"
-                    );
-
-                    if (group == null ||
-                        group.trim().isEmpty()) {
-                        group = "أخرى";
-                    }
-
+                    group = extractAttr(line, "group-title");
+                    if (group == null || group.trim().isEmpty()) group = "أخرى";
                     referrer = "";
 
-                } else if (
-                        line.startsWith(
-                                "#EXTVLCOPT:http-referrer="
-                        )
-                ) {
-
+                } else if (line.startsWith("#EXTVLCOPT:http-referrer=")) {
                     referrer = line.substring(
                             "#EXTVLCOPT:http-referrer=".length()
                     ).trim();
 
-                } else if (
-                        !line.isEmpty() &&
+                } else if (!line.isEmpty() &&
                         !line.startsWith("#") &&
-                        name != null
-                ) {
+                        name != null) {
 
                     allChannels.add(
-                            new Channel(
-                                    name,
-                                    group,
-                                    line,
-                                    referrer
-                            )
+                            new Channel(name, group, line, referrer)
                     );
 
                     name = null;
@@ -573,7 +386,6 @@ public class MainActivity extends Activity {
             br.close();
 
         } catch (Exception e) {
-
             Toast.makeText(
                     this,
                     "تعذر قراءة قائمة القنوات",
@@ -582,37 +394,20 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String extractAttr(
-            String line,
-            String attr
-    ) {
-
+    private String extractAttr(String line, String attr) {
         String key = attr + "=\"";
-
         int s = line.indexOf(key);
-
-        if (s < 0) {
-            return "";
-        }
-
+        if (s < 0) return "";
         s += key.length();
-
         int e = line.indexOf('"', s);
-
-        return e > s
-                ? line.substring(s, e)
-                : "";
+        return e > s ? line.substring(s, e) : "";
     }
 
     class ChannelAdapter extends BaseAdapter {
-
         private final Context ctx;
         private final List<Channel> data;
 
-        ChannelAdapter(
-                Context c,
-                List<Channel> d
-        ) {
+        ChannelAdapter(Context c, List<Channel> d) {
             ctx = c;
             data = d;
         }
@@ -633,135 +428,61 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        public View getView(
-                int position,
-                View convertView,
-                ViewGroup parent
-        ) {
-
+        public View getView(int position, View convertView, ViewGroup parent) {
             TextView t;
 
             if (convertView instanceof TextView) {
-
                 t = (TextView) convertView;
-
             } else {
-
                 t = new TextView(ctx);
-
                 t.setTextColor(Color.WHITE);
-                t.setTextSize(20);
-                t.setTypeface(
-                        Typeface.DEFAULT,
-                        Typeface.BOLD
-                );
-
+                t.setTextSize(19);
+                t.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
                 t.setGravity(Gravity.CENTER);
-                t.setPadding(
-                        dp(12),
-                        dp(12),
-                        dp(12),
-                        dp(12)
-                );
-
+                t.setPadding(dp(10), dp(10), dp(10), dp(10));
                 t.setFocusable(true);
                 t.setFocusableInTouchMode(false);
-                t.setMinHeight(dp(112));
+                t.setMinHeight(dp(108));
             }
 
             Channel ch = data.get(position);
-
-            String star =
-                    favorites.contains(ch.url)
-                            ? "★ "
-                            : "";
-
+            String star = favorites.contains(ch.url) ? "★ " : "";
             t.setText(star + ch.name);
 
-            t.setBackground(
-                    box(
-                            TILE,
-                            16,
-                            Color.TRANSPARENT,
-                            0
-                    )
-            );
-
+            t.setBackground(box(TILE, 15, Color.TRANSPARENT, 0));
+            t.setTextColor(Color.WHITE);
             t.setScaleX(1f);
             t.setScaleY(1f);
+            t.setElevation(0);
 
-            t.setOnClickListener(
-                    v -> openChannel(ch)
-            );
+            t.setOnClickListener(v -> openChannel(ch));
 
-            // ضغط مطول على OK = إضافة/حذف من المفضلة
             t.setOnLongClickListener(v -> {
-
                 toggleFavorite(ch);
                 return true;
             });
 
-            // زر Menu كذلك يضيف للمفضلة
             t.setOnKeyListener((v, keyCode, event) -> {
-
-                if (event.getAction() ==
-                        KeyEvent.ACTION_DOWN &&
-                    keyCode ==
-                        KeyEvent.KEYCODE_MENU) {
-
+                if (event.getAction() == KeyEvent.ACTION_DOWN &&
+                        keyCode == KeyEvent.KEYCODE_MENU) {
                     toggleFavorite(ch);
                     return true;
                 }
-
                 return false;
             });
 
-            t.setOnFocusChangeListener(
-                    (v, hasFocus) -> {
+            t.setOnFocusChangeListener((v, hasFocus) -> {
+                TextView tv = (TextView) v;
 
-                        TextView tv =
-                                (TextView) v;
-
-                        if (hasFocus) {
-
-                            tv.setBackground(
-                                    box(
-                                            GOLD_DARK,
-                                            16,
-                                            GOLD,
-                                            4
-                                    )
-                            );
-
-                            tv.setTextColor(
-                                    Color.WHITE
-                            );
-
-                            tv.setScaleX(1.06f);
-                            tv.setScaleY(1.06f);
-                            tv.setElevation(dp(12));
-
-                        } else {
-
-                            tv.setBackground(
-                                    box(
-                                            TILE,
-                                            16,
-                                            Color.TRANSPARENT,
-                                            0
-                                    )
-                            );
-
-                            tv.setTextColor(
-                                    Color.WHITE
-                            );
-
-                            tv.setScaleX(1f);
-                            tv.setScaleY(1f);
-                            tv.setElevation(0);
-                        }
-                    }
-            );
+                if (hasFocus) {
+                    // بدون تكبير حتى ما ينقص الإطار يمين/يسار
+                    tv.setBackground(box(GOLD_DARK, 15, GOLD, 4));
+                    tv.setElevation(dp(10));
+                } else {
+                    tv.setBackground(box(TILE, 15, Color.TRANSPARENT, 0));
+                    tv.setElevation(0);
+                }
+            });
 
             return t;
         }
