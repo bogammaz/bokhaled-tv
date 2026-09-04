@@ -17,6 +17,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -30,6 +31,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
@@ -105,13 +108,22 @@ public class MainActivity extends Activity {
         root.setClipChildren(false);
         root.setClipToPadding(false);
 
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-        header.setClipChildren(false);
+        // هيدر واحد: صورة الكويت خلف الشعار والاسم والساعة بدون إطارات منفصلة.
+        FrameLayout header = new FrameLayout(this);
         header.setPadding(dp(8), dp(4), dp(8), dp(4));
-        header.setBackground(box(Color.rgb(10, 8, 3), 16, GOLD_DARK, 1));
+        header.setBackground(box(Color.rgb(10, 8, 3), 16, GOLD, 1));
+
+        ImageView skyline = new ImageView(this);
+        skyline.setImageResource(R.drawable.kuwait_header);
+        skyline.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        skyline.setContentDescription("أبراج الكويت");
+        header.addView(skyline, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        View shade = new View(this);
+        shade.setBackgroundColor(Color.argb(72, 0, 0, 0));
+        header.addView(shade, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         LinearLayout brand = new LinearLayout(this);
         brand.setOrientation(LinearLayout.VERTICAL);
@@ -120,23 +132,48 @@ public class MainActivity extends Activity {
         ImageView logo = new ImageView(this);
         logo.setImageResource(R.drawable.abk_logo);
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        brand.addView(logo, new LinearLayout.LayoutParams(dp(82), dp(82)));
+        brand.addView(logo, new LinearLayout.LayoutParams(dp(76), dp(76)));
 
         TextView title = new TextView(this);
         title.setText("عبدالعزيز بوقماز");
         title.setTextColor(GOLD);
-        title.setTextSize(17);
+        title.setTextSize(16);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setGravity(Gravity.CENTER);
-        brand.addView(title, new LinearLayout.LayoutParams(dp(150), dp(28)));
+        brand.addView(title, new LinearLayout.LayoutParams(dp(160), dp(26)));
 
-        header.addView(brand, new LinearLayout.LayoutParams(dp(160), dp(112)));
+        header.addView(brand, new FrameLayout.LayoutParams(
+                dp(175), dp(108), Gravity.START | Gravity.CENTER_VERTICAL));
 
-        ImageView skyline = new ImageView(this);
-        skyline.setImageResource(R.drawable.abk_banner);
-        skyline.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        skyline.setContentDescription("أبراج الكويت");
-        header.addView(skyline, new LinearLayout.LayoutParams(0, dp(112), 1f));
+        LinearLayout clockBox = new LinearLayout(this);
+        clockBox.setOrientation(LinearLayout.VERTICAL);
+        clockBox.setGravity(Gravity.CENTER);
+
+        TextView clock = new TextView(this);
+        clock.setTextColor(Color.WHITE);
+        clock.setTextSize(20);
+        clock.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        clock.setGravity(Gravity.CENTER);
+        clockBox.addView(clock, new LinearLayout.LayoutParams(dp(180), dp(34)));
+
+        TextView date = new TextView(this);
+        date.setTextColor(GOLD);
+        date.setTextSize(13);
+        date.setGravity(Gravity.CENTER);
+        clockBox.addView(date, new LinearLayout.LayoutParams(dp(210), dp(28)));
+
+        Runnable updateClock = new Runnable() {
+            @Override public void run() {
+                Date now = new Date();
+                clock.setText(new SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(now));
+                date.setText(new SimpleDateFormat("EEEE، d MMMM yyyy", new Locale("ar")).format(now));
+                clock.postDelayed(this, 30000);
+            }
+        };
+        clock.post(updateClock);
+
+        header.addView(clockBox, new FrameLayout.LayoutParams(
+                dp(225), dp(92), Gravity.END | Gravity.CENTER_VERTICAL));
 
         root.addView(header, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(120)));
@@ -364,15 +401,83 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("الخروج من التطبيق")
-                .setMessage("تبي تبقى بالتطبيق ولا تغلقه؟")
-                .setPositiveButton("البقاء", (d, which) -> d.dismiss())
-                .setNegativeButton("إغلاق التطبيق", (d, which) -> finishAffinity())
-                .create();
-        dialog.setOnShowListener(d ->
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).requestFocus());
+        final AlertDialog dialog = new AlertDialog.Builder(this).create();
+
+        LinearLayout panel = new LinearLayout(this);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setGravity(Gravity.CENTER);
+        panel.setPadding(dp(30), dp(22), dp(30), dp(22));
+        panel.setBackground(box(Color.rgb(10, 10, 10), 18, GOLD, 2));
+
+        TextView heading = new TextView(this);
+        heading.setText("الخروج من التطبيق");
+        heading.setTextColor(GOLD);
+        heading.setTextSize(24);
+        heading.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        heading.setGravity(Gravity.CENTER);
+        panel.addView(heading, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(44)));
+
+        TextView message = new TextView(this);
+        message.setText("تبي تبقى بالتطبيق ولا تغلقه؟");
+        message.setTextColor(Color.WHITE);
+        message.setTextSize(18);
+        message.setGravity(Gravity.CENTER);
+        panel.addView(message, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(48)));
+
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+        buttons.setGravity(Gravity.CENTER);
+
+        Button stay = exitButton("البقاء");
+        Button close = exitButton("إغلاق التطبيق");
+
+        LinearLayout.LayoutParams stayLp = new LinearLayout.LayoutParams(dp(180), dp(54));
+        stayLp.setMargins(dp(10), dp(8), dp(10), 0);
+        buttons.addView(stay, stayLp);
+
+        LinearLayout.LayoutParams closeLp = new LinearLayout.LayoutParams(dp(180), dp(54));
+        closeLp.setMargins(dp(10), dp(8), dp(10), 0);
+        buttons.addView(close, closeLp);
+        panel.addView(buttons);
+
+        stay.setOnClickListener(v -> dialog.dismiss());
+        close.setOnClickListener(v -> {
+            dialog.dismiss();
+            finishAffinity();
+        });
+
+        dialog.setView(panel);
+        dialog.setOnShowListener(d -> {
+            Window w = dialog.getWindow();
+            if (w != null) {
+                w.setBackgroundDrawableResource(android.R.color.transparent);
+                w.setLayout(dp(500), WindowManager.LayoutParams.WRAP_CONTENT);
+            }
+            stay.requestFocus();
+        });
         dialog.show();
+    }
+
+    private Button exitButton(String text) {
+        Button b = new Button(this);
+        b.setText(text);
+        b.setTextColor(Color.WHITE);
+        b.setTextSize(18);
+        b.setAllCaps(false);
+        b.setFocusable(true);
+        b.setBackground(box(TILE, 12, GOLD_DARK, 1));
+        b.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                b.setBackground(box(GOLD_DARK, 12, GOLD, 3));
+                b.setElevation(dp(8));
+            } else {
+                b.setBackground(box(TILE, 12, GOLD_DARK, 1));
+                b.setElevation(0);
+            }
+        });
+        return b;
     }
 
     class ChannelAdapter extends BaseAdapter {
