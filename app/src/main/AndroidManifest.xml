@@ -5,9 +5,12 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
 
     <application
+        android:icon="@drawable/ic_abk"
+        android:roundIcon="@drawable/ic_abk"
+        android:banner="@drawable/ic_abk"
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme"
-        android:label="قنوات الوالد">
+        android:label="BOGAMMAZ">
 
         <activity
             android:name=".PlayerActivity"

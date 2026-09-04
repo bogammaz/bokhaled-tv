@@ -280,3 +280,9 @@ https://shd-gcp-live.edgenextcdn.net/live/bitmovin-hadath/2ff87ec4c2f3ede35295a2
 https://live.kwikmotion.com/alaraby1live/alaraby_abr/playlist.m3u8
 #EXTINF:-1 tvg-id="AlGhadTV.eg@SD" group-title="الأخبار",Al Ghad TV
 https://eazyvwqssi.erbvr.com/alghadtv/alghadtv.m3u8
+
+
+#EXTINF:-1 group-title="MBC",باب الحارة
+https://shahid.mbc.net/ar/livestream/Bab-Al-Hara-Channel/livechannel-975435
+#EXTINF:-1 group-title="MBC",مرايا
+https://shahid.mbc.net/ar/livestream/Maraya/livechannel-988045

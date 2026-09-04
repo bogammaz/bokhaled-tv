@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -125,7 +126,7 @@ public class MainActivity extends Activity {
         header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
 
         TextView logo = new TextView(this);
-        logo.setText("AKB");
+        logo.setText("ABK");
         logo.setTextColor(GOLD);
         logo.setTextSize(30);
         logo.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -139,7 +140,7 @@ public class MainActivity extends Activity {
         );
 
         TextView title = new TextView(this);
-        title.setText("قنوات الوالد");
+        title.setText("عبدالعزيز بوقماز");
         title.setTextColor(Color.WHITE);
         title.setTextSize(28);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -372,6 +373,31 @@ public class MainActivity extends Activity {
 
     private void openChannel(Channel ch) {
 
+        if ("MBC".equals(ch.group) ||
+            (ch.url != null && ch.url.contains("shahid.mbc.net"))) {
+
+            String officialUrl = getOfficialShahidUrl(ch);
+
+            try {
+                Intent shahid = new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(officialUrl)
+                );
+
+                startActivity(shahid);
+
+            } catch (Exception e) {
+
+                Toast.makeText(
+                        this,
+                        "ثبت تطبيق Shahid على التلفزيون لتشغيل هالقناة",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+
+            return;
+        }
+
         Intent in = new Intent(
                 MainActivity.this,
                 PlayerActivity.class
@@ -385,6 +411,43 @@ public class MainActivity extends Activity {
         );
 
         startActivity(in);
+    }
+
+    private String getOfficialShahidUrl(Channel ch) {
+
+        String name = ch.name == null
+                ? ""
+                : ch.name.trim().toLowerCase();
+
+        if (name.contains("باب الحارة")) {
+            return "https://shahid.mbc.net/ar/livestream/Bab-Al-Hara-Channel/livechannel-975435";
+        }
+
+        if (name.contains("مرايا") || name.contains("maraya")) {
+            return "https://shahid.mbc.net/ar/livestream/Maraya/livechannel-988045";
+        }
+
+        if (name.contains("mbc masr 2")) {
+            return "https://shahid.mbc.net/ar/livestream/MBC-Masr/livechannel-387293";
+        }
+
+        if (name.contains("mbc masr")) {
+            return "https://shahid.mbc.net/ar/livestream/mbc-masr/livechannel-387290";
+        }
+
+        if (name.contains("mbc drama")) {
+            return "https://shahid.mbc.net/ar/livestream/MBC-Drama/livechannel-387251";
+        }
+
+        if (name.contains("mbc 2") || name.equals("mbc2")) {
+            return "https://shahid.mbc.net/ar/livestream/MBC2/livechannel-400917";
+        }
+
+        if (name.contains("mbc 1") || name.equals("mbc1")) {
+            return "https://shahid.mbc.net/ar/livestream/MBC1/livechannel-387238";
+        }
+
+        return "https://shahid.mbc.net/ar/livestream";
     }
 
     private void toggleFavorite(Channel ch) {
