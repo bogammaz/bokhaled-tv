@@ -57,10 +57,10 @@ public class MainActivity extends Activity {
     private Set<String> favorites = new HashSet<>();
     private String activeGroup = "★ المفضلة";
 
-    private final int BG = Color.rgb(15, 17, 21);
-    private final int TILE = Color.rgb(31, 35, 43);
+    private final int BG = Color.rgb(7, 7, 7);
+    private final int TILE = Color.rgb(18, 18, 18);
     private final int GOLD = Color.rgb(212, 175, 55);
-    private final int GOLD_DARK = Color.rgb(91, 72, 19);
+    private final int GOLD_DARK = Color.rgb(74, 54, 10);
 
     private static final int MAX_FAVORITES = 14;
 
@@ -121,11 +121,11 @@ public class MainActivity extends Activity {
         logo.setImageResource(R.drawable.abk_logo);
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
         logo.setContentDescription("ABK IPTV");
-        header.addView(logo, new LinearLayout.LayoutParams(dp(82), dp(82)));
+        header.addView(logo, new LinearLayout.LayoutParams(dp(96), dp(96)));
 
         TextView title = new TextView(this);
         title.setText("عبدالعزيز بوقماز");
-        title.setTextColor(Color.WHITE);
+        title.setTextColor(GOLD);
         title.setTextSize(28);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
@@ -133,7 +133,7 @@ public class MainActivity extends Activity {
         header.addView(title, new LinearLayout.LayoutParams(0, dp(82), 1f));
 
         root.addView(header, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(86)));
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(102)));
 
         HorizontalScrollView hsv = new HorizontalScrollView(this);
         hsv.setHorizontalScrollBarEnabled(false);
@@ -188,7 +188,7 @@ public class MainActivity extends Activity {
         groups.add("الكل");
 
         String[] preferred = new String[] {
-                "الكويت", "MBC", "السعودية", "الإمارات", "قطر", "البحرين",
+                "الكويت", "الشرق", "الجزيرة", "MBC", "السعودية", "الإمارات", "قطر", "البحرين",
                 "عمان", "مصر", "لبنان", "العراق", "المغرب", "الجزائر",
                 "تونس", "فلسطين", "الأردن", "سوريا", "الأخبار",
                 "رياضة", "أطفال", "أفلام", "موسيقى"
@@ -211,7 +211,7 @@ public class MainActivity extends Activity {
             b.setFocusable(true);
             b.setFocusableInTouchMode(false);
             b.setPadding(dp(22), 0, dp(22), 0);
-            b.setBackground(box(TILE, 12, Color.TRANSPARENT, 0));
+            b.setBackground(box(TILE, 12, GOLD_DARK, 1));
 
             LinearLayout.LayoutParams lp =
                     new LinearLayout.LayoutParams(
@@ -225,7 +225,7 @@ public class MainActivity extends Activity {
                     v.setBackground(box(GOLD_DARK, 12, GOLD, 3));
                     v.setElevation(dp(8));
                 } else {
-                    v.setBackground(box(TILE, 12, Color.TRANSPARENT, 0));
+                    v.setBackground(box(TILE, 12, GOLD_DARK, 1));
                     v.setElevation(0);
                 }
             });
@@ -449,7 +449,7 @@ public class MainActivity extends Activity {
             String star = favorites.contains(ch.url) ? "★ " : "";
             t.setText(star + ch.name);
 
-            t.setBackground(box(TILE, 15, Color.TRANSPARENT, 0));
+            t.setBackground(box(TILE, 15, GOLD_DARK, 1));
             t.setTextColor(Color.WHITE);
             t.setScaleX(1f);
             t.setScaleY(1f);
@@ -479,7 +479,7 @@ public class MainActivity extends Activity {
                     tv.setBackground(box(GOLD_DARK, 15, GOLD, 4));
                     tv.setElevation(dp(10));
                 } else {
-                    tv.setBackground(box(TILE, 15, Color.TRANSPARENT, 0));
+                    tv.setBackground(box(TILE, 15, GOLD_DARK, 1));
                     tv.setElevation(0);
                 }
             });
